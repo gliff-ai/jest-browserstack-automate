@@ -60,7 +60,14 @@ const wrapper = (cb) => {
   });
 
   afterAll((done) => {
-    if (bs_local) bs_local.stop(() => {console.log("BrowserStack local stopped"); done();});
+    if (bs_local) {
+      bs_local.stop(() => {
+        console.log("BrowserStack local stopped"); 
+        done();
+      });
+    } else {
+      done();
+    }
   }, 60000);
 };
 
