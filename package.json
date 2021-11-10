@@ -1,0 +1,25 @@
+{
+  "name": "@gliff-ai/jest-browserstack-automate",
+  "version": "1.0.1",
+  "description": "Simple harness for running Automate tests with Jest",
+  "main": "index.js",
+  "private": false,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gliff-ai/jest-browserstack-automate.git"
+  },
+  "author": "Craig Cooper",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/gliff-ai/jest-browserstack-automate/issues"
+  },
+  "homepage": "https://github.com/gliff-ai/jest-browserstack-automate#readme",
+  "dependencies": {
+    "browserstack-local": "^1.4.8",
+    "jest": "^27.3.1",
+    "selenium-webdriver": "^4.0.0"
+  }
+}
