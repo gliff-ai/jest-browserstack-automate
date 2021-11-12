@@ -8,7 +8,7 @@ const {
   wrapper,
   test,
   webdriver,
-} = require("@gliff-ai/jest-browserstack-automate");
+} = require("@gliff-ai/jest-browserstack-automate")();
 
 const { TARGET_URL = "http://localhost:3000/" } = process.env;
 
@@ -32,6 +32,6 @@ run with `jest --no-colors` as we send the message to browserstack so don't want
 
 If no env vars are set, it will run locally, you will need the driver installed for the selected browser.
 
-If BROWSERSTACK_URL is set, it will use Browserstack for the driver (capabilities can be passed as the final arg to `test`)
+If BROWSERSTACK_NAME is set, it will use Browserstack for the driver (capabilities can be passed as the final arg to `test`)
 
 If BROWSERSTACK_ACCESS_KEY is set, the Browserstack local proxy will be set up, which allows the use of local URLs.
