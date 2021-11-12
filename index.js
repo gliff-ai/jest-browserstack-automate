@@ -41,7 +41,7 @@ const bsDesktopBrowsers = [
   // },
 ];
 
-const init = (desktopBrowsers = bsDesktopBrowsers) => {
+const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
   const getDriver = (capabilities = {}, localBrowser = "chrome") => {
     if (!BROWSERSTACK_URL) {
       return new webdriver.Builder().forBrowser(localBrowser).build();
@@ -79,7 +79,7 @@ const init = (desktopBrowsers = bsDesktopBrowsers) => {
       });
     });
 
-  const wrapper = (project, cb) => {
+  const wrapper = (cb) => {
     let bs_local;
 
     beforeAll(async () => {
