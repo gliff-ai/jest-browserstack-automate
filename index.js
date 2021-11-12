@@ -2,7 +2,7 @@ const webdriver = require("selenium-webdriver");
 const browserstack = require("browserstack-local");
 const { test: jestTest } = require("@jest/globals");
 
-const { BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY } = process.env;
+const { BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_BUILD_NAME = "local build" } = process.env;
 
 const BROWSERSTACK_URL = BROWSERSTACK_USERNAME ? `http://${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub` : null;
 
@@ -51,7 +51,7 @@ const init = (desktopBrowsers = bsDesktopBrowsers) => {
       "browserstack.local": "true",
       "browserstack.console": "errors",
       name: "Test Test",
-      build: "Build 0",
+      build: BROWSERSTACK_BUILD_NAME,
 
       ...capabilities,
     };
