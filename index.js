@@ -2,7 +2,9 @@ const webdriver = require("selenium-webdriver");
 const browserstack = require("browserstack-local");
 const { test: jestTest } = require("@jest/globals");
 
-const { BROWSERSTACK_URL, BROWSERSTACK_ACCESS_KEY } = process.env;
+const { BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY } = process.env;
+
+const BROWSERSTACK_URL = BROWSERSTACK_USERNAME ? `http://${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub` : null;
 
 const bsMobileBrowsers = [["iPad 8th", "Safari"]];
 
