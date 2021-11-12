@@ -1,21 +1,53 @@
 const webdriver = require("selenium-webdriver");
 const browserstack = require("browserstack-local");
-const {test: jestTest} = require("@jest/globals");
+const { test: jestTest } = require("@jest/globals");
 
-const {
-  BROWSERSTACK_URL,
-  BROWSERSTACK_ACCESS_KEY,
-} = process.env;
+const { BROWSERSTACK_URL, BROWSERSTACK_ACCESS_KEY } = process.env;
 
-const getDriver = (capabilities = {}, localBrowser = "chrome") => {
-  if (BROWSERSTACK_URL) {
-    const mergedCapabilities = {
+const bsMobileBrowsers = [["iPad 8th", "Safari"]];
+
+const bsDesktopBrowsers = [
+  {
+    browserName: "Chrome",
+    browser_version: "latest",
+    os: "OS X",
+    os_version: "Big Sur",
+  },
+  {
+    browserName: "Chrome",
+    browser_version: "latest",
+    os: "Windows",
+    os_version: "10",
+  },
+  {
+    browserName: "Safari",
+    browser_version: "latest",
+    os: "OS X",
+    os_version: "Big Sur",
+  },
+  {
+    browserName: "Edge",
+    browser_version: "latest",
+    os: "Windows",
+    os_version: "10",
+  },
+  // Real mobile devices aren't working yet
+  // {
+  //   device: "iPad 8th", // choose "iPhone 12 Pro" etc.
+  //   real_mobile: "true",
+  //   browserName: "Safari",
+  // },
+];
+
+const init = (desktopBrowsers = bsDesktopBrowsers) => {
+  const getDriver = (capabilities = {}, localBrowser = "chrome") => {
+    if (!BROWSERSTACK_URL) {
+      return new webdriver.Builder().forBrowser(localBrowser).build();
+    }
+
+    const baseCapabilities = {
       "browserstack.local": "true",
-      os_version: "Big Sur",
-      resolution: "1920x1080",
-      browserName: "Chrome",
-      browser_version: "latest",
-      os: "OS X",
+      "browserstack.console": "errors",
       name: "Test Test",
       build: "Build 0",
 
@@ -24,92 +56,106 @@ const getDriver = (capabilities = {}, localBrowser = "chrome") => {
 
     return new webdriver.Builder()
       .usingServer(BROWSERSTACK_URL)
-      .withCapabilities(mergedCapabilities)
+      .withCapabilities(baseCapabilities)
       .build();
-  } else {
-    return new webdriver.Builder().forBrowser(localBrowser).build();
-  }
-};
+  };
 
-const initBrowserStackLocal = () => {
-  return new Promise((resolve, reject) => {
-    // Creates an instance of Local
-    const bs_local = new browserstack.Local();
+  const initBrowserStackLocal = () =>
+    new Promise((resolve) => {
+      // Creates an instance of Local
+      const bs_local = new browserstack.Local();
 
-    const bs_local_args = { key: BROWSERSTACK_ACCESS_KEY };
+      const bs_local_args = {
+        key: BROWSERSTACK_ACCESS_KEY,
+        verbose: 3,
+      };
 
-    // Starts the Local instance with the required arguments
-    bs_local.start(bs_local_args, function () {
-      console.log("BrowserStack local started");
-      resolve(bs_local);
-    });
-  });
-};
-
-const wrapper = (cb) => {
-  let bs_local;
-
-  beforeAll(async () => {
-    if (BROWSERSTACK_ACCESS_KEY) {
-      bs_local = await initBrowserStackLocal();
-    }
-  }, 30000);
-
-  describe("selenium tests", () => {
-    cb();
-  });
-
-  afterAll((done) => {
-    if (bs_local) {
-      bs_local.stop(() => {
-        console.log("BrowserStack local stopped"); 
-        done();
+      // Starts the Local instance with the required arguments
+      bs_local.start(bs_local_args, function () {
+        console.log("BrowserStack local started");
+        resolve(bs_local);
       });
-    } else {
-      done();
-    }
-  }, 60000);
-};
+    });
 
-const test = async (name, action, timeout = 60000, driverOptions = {capabilities: {}, localBrowser: "chrome"}) =>
-  jestTest(
-    name,
-    async () => {
-      const driver = await getDriver(driverOptions);
+  const wrapper = (cb) => {
+    let bs_local;
 
-      if (BROWSERSTACK_URL) {
-        driver.executeScript(
-          `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${name}"}}`
-        );
+    beforeAll(async () => {
+      if (BROWSERSTACK_ACCESS_KEY) {
+        bs_local = await initBrowserStackLocal();
       }
+    }, 30000);
 
-      try {
-        // Run the passed test
-        await action(driver);
+    describe("selenium tests", () => {
+      cb();
+    });
 
-        if (BROWSERSTACK_URL) {
-          await driver.executeScript(
-            'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
-          );
-        }
-      } catch (error) {
-        // We need to tell Browserstack we have failed!
+    afterAll((done) => {
+      if (bs_local) {
+        bs_local.stop(() => {
+          console.log("BrowserStack local stopped");
+          done();
+        });
+      } else {
+        done();
+      }
+    }, 60000);
+  };
+
+  const test = async (
+    name,
+    action,
+    timeout = 60000,
+    driverOptions = { capabilities: {}, localBrowser: "chrome" }
+  ) =>
+    jestTest.each(BROWSERSTACK_URL ? bsDesktopBrowsers : [{}])(
+      `${name} - $browserName - $os`,
+      async (browser) => {
+        driverOptions.capabilities = {
+          ...driverOptions.capabilities,
+          ...browser,
+        };
+        const driver = await getDriver(
+          driverOptions.capabilities,
+          driverOptions.localBrowser
+        );
+
         if (BROWSERSTACK_URL) {
           driver.executeScript(
             `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${name}"}}`
           );
-          const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
-            .replace(/(\r\n|\n|\r)/gm, " ")
-            .replace(/"/gm, "'")}"}}`;
-
-          await driver.executeScript(script);
         }
-        throw error;
-      } finally {
-        await driver.quit();
-      }
-    },
-    timeout
-  );
 
-  module.exports = {test, wrapper, webdriver};
+        try {
+          // Run the passed test
+          await action(driver);
+
+          if (BROWSERSTACK_URL) {
+            await driver.executeScript(
+              'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
+            );
+          }
+        } catch (error) {
+          // We need to tell Browserstack we have failed!
+          if (BROWSERSTACK_URL) {
+            driver.executeScript(
+              `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${name}"}}`
+            );
+            const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
+              .replace(/(\r\n|\n|\r)/gm, " ")
+              .replace(/"/gm, "'")}"}}`;
+
+            await driver.executeScript(script);
+          }
+          throw error;
+        } finally {
+          await driver.quit();
+        }
+      },
+      timeout
+    );
+
+  return { test, wrapper, webdriver };
+};
+
+module.exports = init;
