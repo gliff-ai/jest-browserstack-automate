@@ -79,7 +79,7 @@ const init = (desktopBrowsers = bsDesktopBrowsers) => {
       });
     });
 
-  const wrapper = (cb) => {
+  const wrapper = (project, cb) => {
     let bs_local;
 
     beforeAll(async () => {
@@ -114,6 +114,7 @@ const init = (desktopBrowsers = bsDesktopBrowsers) => {
       `${name} - $browserName - $os`,
       async (browser) => {
         driverOptions.capabilities = {
+          project,
           ...driverOptions.capabilities,
           ...browser,
         };
