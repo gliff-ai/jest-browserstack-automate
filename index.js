@@ -125,7 +125,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
 
         if (BROWSERSTACK_URL) {
           driver.executeScript(
-            `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${name}"}}`
+            `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project} > ${name}"}}`
           );
         }
 
@@ -142,7 +142,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
           // We need to tell Browserstack we have failed!
           if (BROWSERSTACK_URL) {
             driver.executeScript(
-              `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${name}"}}`
+              `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project} > ${name}"}}`
             );
             const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
               .replace(/(\r\n|\n|\r)/gm, " ")
