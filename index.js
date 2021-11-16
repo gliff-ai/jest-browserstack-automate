@@ -48,10 +48,8 @@ const bsDesktopBrowsers = [
 
 const getPercySnapshotFn = () => {
   const snaps = new Set();
-  console.log(snaps);
 
   return (driver, name, options) => {
-    console.log("percy fn");
     if (snaps.has(name)) {
       return;
     } else {
