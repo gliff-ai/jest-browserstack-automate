@@ -1,5 +1,6 @@
 const webdriver = require("selenium-webdriver");
 const browserstack = require("browserstack-local");
+const percySnapshotOriginal = require('@percy/selenium-webdriver');
 const { test: jestTest } = require("@jest/globals");
 
 const { BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_BUILD_NAME = "local build" } = process.env;
@@ -40,6 +41,21 @@ const bsDesktopBrowsers = [
   //   browserName: "Safari",
   // },
 ];
+
+const getPercySnapshotFn = (driver) => {
+  const snaps = new Set();
+  console.log(snaps)
+  
+  return (name, options) => {
+    console.log("percy fn")
+    if(snaps.has(name)) {
+      return; 
+    } else {
+      snaps.add(name)
+      return percySnapshotOriginal(driver, name, options);
+    }
+  }
+}
 
 const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
   const getDriver = (capabilities = {}, localBrowser = "chrome") => {
@@ -123,6 +139,8 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
           driverOptions.localBrowser
         );
 
+        const percySnapshot = getPercySnapshotFn(driver);
+
         if (BROWSERSTACK_URL) {
           driver.executeScript(
             `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
@@ -131,7 +149,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
 
         try {
           // Run the passed test
-          await action(driver);
+          await action(driver, percySnapshot);
 
           if (BROWSERSTACK_URL) {
             await driver.executeScript(
