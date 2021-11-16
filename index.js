@@ -1,13 +1,17 @@
 const webdriver = require("selenium-webdriver");
 const browserstack = require("browserstack-local");
-const percySnapshotOriginal = require('@percy/selenium-webdriver');
+const percySnapshotOriginal = require("@percy/selenium-webdriver");
 const { test: jestTest } = require("@jest/globals");
 
-const { BROWSERSTACK_USERNAME, BROWSERSTACK_ACCESS_KEY, BROWSERSTACK_BUILD_NAME = "local build" } = process.env;
+const {
+  BROWSERSTACK_USERNAME,
+  BROWSERSTACK_ACCESS_KEY,
+  BROWSERSTACK_BUILD_NAME = "local build",
+} = process.env;
 
-const BROWSERSTACK_URL = BROWSERSTACK_USERNAME ? `http://${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub` : null;
-
-const bsMobileBrowsers = [["iPad 8th", "Safari"]];
+const BROWSERSTACK_URL = BROWSERSTACK_USERNAME
+  ? `http://${BROWSERSTACK_USERNAME}:${BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub`
+  : null;
 
 const bsDesktopBrowsers = [
   {
@@ -42,20 +46,20 @@ const bsDesktopBrowsers = [
   // },
 ];
 
-const getPercySnapshotFn = (driver) => {
+const getPercySnapshotFn = () => {
   const snaps = new Set();
-  console.log(snaps)
-  
-  return (name, options) => {
-    console.log("percy fn")
-    if(snaps.has(name)) {
-      return; 
+  console.log(snaps);
+
+  return (driver, name, options) => {
+    console.log("percy fn");
+    if (snaps.has(name)) {
+      return;
     } else {
-      snaps.add(name)
+      snaps.add(name);
       return percySnapshotOriginal(driver, name, options);
     }
-  }
-}
+  };
+};
 
 const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
   const getDriver = (capabilities = {}, localBrowser = "chrome") => {
@@ -125,21 +129,20 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
     action,
     timeout = 60000,
     driverOptions = { capabilities: {}, localBrowser: "chrome" }
-  ) =>
-    jestTest.each(BROWSERSTACK_URL ? bsDesktopBrowsers : [{}])(
+  ) => {
+    const percySnapshot = getPercySnapshotFn();
+
+    return jestTest.each(BROWSERSTACK_URL ? bsDesktopBrowsers : [{}])(
       `${name} - $browserName - $os`,
       async (browser) => {
-        driverOptions.capabilities = {
-          project,
-          ...driverOptions.capabilities,
-          ...browser,
-        };
         const driver = await getDriver(
-          driverOptions.capabilities,
+          {
+            project,
+            ...driverOptions.capabilities,
+            ...browser,
+          },
           driverOptions.localBrowser
         );
-
-        const percySnapshot = getPercySnapshotFn(driver);
 
         if (BROWSERSTACK_URL) {
           driver.executeScript(
@@ -175,6 +178,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
       },
       timeout
     );
+  };
 
   return { test, wrapper, webdriver };
 };

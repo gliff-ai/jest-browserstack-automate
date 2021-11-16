@@ -1,6 +1,6 @@
 {
   "name": "@gliff-ai/jest-browserstack-automate",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "description": "Simple harness for running Automate tests with Jest",
   "main": "index.js",
   "private": false,
