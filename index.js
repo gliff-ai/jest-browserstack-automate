@@ -38,12 +38,11 @@ const bsDesktopBrowsers = [
     os: "Windows",
     os_version: "10",
   },
-  // Real mobile devices aren't working yet
-  // {
-  //   device: "iPad 8th", // choose "iPhone 12 Pro" etc.
-  //   real_mobile: "true",
-  //   browserName: "Safari",
-  // },
+  {
+    device: "iPad 8th", // choose "iPhone 12 Pro" etc.
+    real_mobile: "true",
+    browserName: "Safari",
+  },
 ];
 
 const getPercySnapshotFn = () => {
