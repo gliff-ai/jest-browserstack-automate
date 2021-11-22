@@ -53,7 +53,7 @@ const getPercySnapshotFn = () => {
       return;
     } else {
       snaps.add(name);
-      return percySnapshotOriginal(driver, name, options);
+      return percySnapshotOriginal(driver, name, {widths: [1024, 1440], ...options});
     }
   };
 };
