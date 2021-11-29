@@ -39,7 +39,7 @@ const bsDesktopBrowsers = [
     os_version: "10",
   },
   {
-    device: "iPad 8th", // choose "iPhone 12 Pro" etc.
+    device: "iPad 8th",
     real_mobile: "true",
     browserName: "Safari",
   },
@@ -53,7 +53,10 @@ const getPercySnapshotFn = () => {
       return;
     } else {
       snaps.add(name);
-      return percySnapshotOriginal(driver, name, {widths: [1024, 1440], ...options});
+      return percySnapshotOriginal(driver, name, {
+        widths: [1024, 1440],
+        ...options,
+      });
     }
   };
 };
@@ -73,10 +76,17 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
       ...capabilities,
     };
 
-    return new webdriver.Builder()
+    const driver = new webdriver.Builder()
       .usingServer(BROWSERSTACK_URL)
       .withCapabilities(baseCapabilities)
       .build();
+
+    if (driver) {
+      return driver;
+    }
+
+    console.error("Couldn't get webdriver");
+    throw new Error("Couldn't get webdriver");
   };
 
   const initBrowserStackLocal = () =>
@@ -102,6 +112,11 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
     beforeAll(async () => {
       if (BROWSERSTACK_ACCESS_KEY) {
         bs_local = await initBrowserStackLocal();
+
+        if (!bs_local) {
+          console.error("Couldn't init Browserstack Local");
+          throw new Error("Couldn't init Browserstack Local");
+        }
       }
     }, 30000);
 
@@ -132,45 +147,49 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
     return jestTest.each(BROWSERSTACK_URL ? bsDesktopBrowsers : [{}])(
       `${name} - $browserName - $os`,
       async (browser) => {
-        const driver = await getDriver(
-          {
-            project,
-            ...driverOptions.capabilities,
-            ...browser,
-          },
-          driverOptions.localBrowser
-        );
-
-        if (BROWSERSTACK_URL) {
-          driver.executeScript(
-            `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
-          );
-        }
-
         try {
-          // Run the passed test
-          await action(driver, percySnapshot);
+          const driver = await getDriver(
+            {
+              project,
+              ...driverOptions.capabilities,
+              ...browser,
+            },
+            driverOptions.localBrowser
+          );
 
-          if (BROWSERSTACK_URL) {
-            await driver.executeScript(
-              'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
-            );
-          }
-        } catch (error) {
-          // We need to tell Browserstack we have failed!
           if (BROWSERSTACK_URL) {
             driver.executeScript(
               `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
             );
-            const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
-              .replace(/(\r\n|\n|\r)/gm, " ")
-              .replace(/"/gm, "'")}"}}`;
-
-            await driver.executeScript(script);
           }
-          throw error;
-        } finally {
-          await driver.quit();
+
+          try {
+            // Run the passed test
+            await action(driver, percySnapshot);
+
+            if (BROWSERSTACK_URL) {
+              await driver.executeScript(
+                'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
+              );
+            }
+          } catch (error) {
+            // We need to tell Browserstack we have failed!
+            if (BROWSERSTACK_URL) {
+              driver.executeScript(
+                `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
+              );
+              const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
+                .replace(/(\r\n|\n|\r)/gm, " ")
+                .replace(/"/gm, "'")}"}}`;
+
+              await driver.executeScript(script);
+            }
+            throw error;
+          } finally {
+            await driver.quit();
+          }
+        } catch (err) {
+          console.error("Couldn't init test");
         }
       },
       timeout
