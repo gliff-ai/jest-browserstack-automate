@@ -170,19 +170,19 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
             if (BROWSERSTACK_URL) {
               await driver.executeScript(
                 'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
-              );
+              ).catch(e => console.warn(`Couldn't send success - ${e}`));
             }
           } catch (error) {
-            // We need to tell Browserstack we have failed!
+            // We need to try to tell Browserstack we have failed!
             if (BROWSERSTACK_URL) {
-              driver.executeScript(
+              await driver.executeScript(
                 `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
-              );
+              ).catch(e => console.warn(`Couldn't send session name - ${e}`));;
               const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
                 .replace(/(\r\n|\n|\r)/gm, " ")
                 .replace(/"/gm, "'")}"}}`;
 
-              await driver.executeScript(script);
+              await driver.executeScript(script).catch(e => console.warn(`Couldn't send failure - ${e}`));;
             }
             throw error;
           } finally {
