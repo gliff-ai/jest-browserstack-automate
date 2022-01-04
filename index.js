@@ -160,7 +160,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
           if (BROWSERSTACK_URL) {
             driver.executeScript(
               `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
-            );
+            ).catch(e => console.warn(`Couldn't setNmae - ${e}`));
           }
 
           try {
@@ -182,11 +182,11 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
                 .replace(/(\r\n|\n|\r)/gm, " ")
                 .replace(/"/gm, "'")}"}}`;
 
-              await driver.executeScript(script).catch(e => console.warn(`Couldn't send failure - ${e}`));;
+              await driver.executeScript(script).catch(e => console.warn(`Couldn't send failure - ${e}`));
             }
             throw error;
           } finally {
-            await driver.quit();
+            await driver.quit().catch(e => console.warn(`Couldn't quit - ${e}`));
           }
         } catch (err) {
           console.error("Couldn't init test");
