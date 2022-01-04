@@ -144,7 +144,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
   ) => {
     const percySnapshot = getPercySnapshotFn();
 
-    return jestTest.each(BROWSERSTACK_URL ? bsDesktopBrowsers : [{}])(
+    return jestTest.each(BROWSERSTACK_URL ? desktopBrowsers : [{}])(
       `${name} - $browserName - $os`,
       async (browser) => {
         try {
