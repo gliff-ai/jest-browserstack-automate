@@ -158,38 +158,62 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
           );
 
           if (BROWSERSTACK_URL) {
-            driver.executeScript(
-              `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
-            ).catch(e => console.warn(`Couldn't setNmae - ${e}`));
+            driver
+              .executeScript(
+                `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
+              )
+              .catch((e) => console.warn(`Couldn't setNmae - ${e}`));
           }
 
           try {
             // Run the passed test
             await action(driver, percySnapshot);
 
-            if (BROWSERSTACK_URL) {
-              await driver.executeScript(
-                'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
-              ).catch(e => console.warn(`Couldn't send success - ${e}`));
-            }
-          } catch (error) {
-            // We need to try to tell Browserstack we have failed!
-            if (BROWSERSTACK_URL) {
-              await driver.executeScript(
-                `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
-              ).catch(e => console.warn(`Couldn't send session name - ${e}`));;
-              const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
-                .replace(/(\r\n|\n|\r)/gm, " ")
-                .replace(/"/gm, "'")}"}}`;
+            console.log("test complete");
 
-              await driver.executeScript(script).catch(e => console.warn(`Couldn't send failure - ${e}`));
+            if (BROWSERSTACK_URL) {
+              await driver
+                .executeScript(
+                  'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Passed"}}'
+                )
+                .catch((e) => console.warn(`Couldn't send success - ${e}`));
+            }
+
+            console.log("no error");
+          } catch (error) {
+            console.log("Caught error");
+
+            try {
+              // We need to try to tell Browserstack we have failed!
+              if (BROWSERSTACK_URL) {
+                await driver
+                  .executeScript(
+                    `browserstack_executor: {"action": "setSessionName", "arguments": {"name": "${project}: ${name}"}}`
+                  )
+                  .catch((e) =>
+                    console.warn(`Couldn't send session name - ${e}`)
+                  );
+                const script = `browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "${error.message
+                  .replace(/(\r\n|\n|\r)/gm, " ")
+                  .replace(/"/gm, "'")}"}}`;
+
+                await driver
+                  .executeScript(script)
+                  .catch((e) => console.warn(`Couldn't send failure - ${e}`));
+              }
+            } catch (e) {
+              console.log("error reporting the error?");
+              console.log(e);
             }
             throw error;
           } finally {
-            await driver.quit().catch(e => console.warn(`Couldn't quit - ${e}`));
+            await driver
+              .quit()
+              .catch((e) => console.warn(`Couldn't quit - ${e}`));
           }
         } catch (err) {
           console.error("Couldn't init test");
+          console.error(err);
         }
       },
       timeout
