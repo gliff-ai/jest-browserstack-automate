@@ -214,6 +214,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
         } catch (err) {
           console.error("Couldn't init test");
           console.error(err);
+          throw err;
         }
       },
       timeout
