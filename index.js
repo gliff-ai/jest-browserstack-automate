@@ -67,11 +67,13 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
       return new webdriver.Builder().forBrowser(localBrowser).build();
     }
 
+
+
     const baseCapabilities = {
       "browserstack.local": "true",
       "browserstack.console": "errors",
       name: "Test Test",
-      build: BROWSERSTACK_BUILD_NAME,
+      build: BROWSERSTACK_BUILD_NAME.substr(0, 254),
 
       ...capabilities,
     };
