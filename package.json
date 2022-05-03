@@ -20,7 +20,6 @@
   "dependencies": {
     "@percy/cli": "==1.0.0-beta.70",
     "@percy/selenium-webdriver": "==1.0.0",
-    "@percy/sdk-utils": "==1.0.0",
     "browserstack-local": "==1.4.8",
     "jest": "==27.3.1",
     "selenium-webdriver": "~4.0.0"
