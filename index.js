@@ -7,6 +7,7 @@ const {
   BROWSERSTACK_USERNAME,
   BROWSERSTACK_ACCESS_KEY,
   BROWSERSTACK_BUILD_NAME = "local build",
+  BROWSERSTACK_LOCAL_IDENTIFIER = null
 } = process.env;
 
 const BROWSERSTACK_URL = BROWSERSTACK_USERNAME
@@ -71,11 +72,14 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
     const baseCapabilities = {
       "browserstack.local": "true",
       "browserstack.console": "errors",
+      "browserstack.localIdentifier": BROWSERSTACK_LOCAL_IDENTIFIER,
       name: "Test Test",
       build: BROWSERSTACK_BUILD_NAME.substr(0, 254),
 
       ...capabilities,
     };
+
+    console.log(baseCapabilities);
 
     const driver = new webdriver.Builder()
       .usingServer(BROWSERSTACK_URL)
