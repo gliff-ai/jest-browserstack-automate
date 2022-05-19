@@ -48,8 +48,9 @@ const bsDesktopBrowsers = [
 const getPercySnapshotFn = () => {
   const snaps = new Set();
 
-  return (driver, name, options) => {
-    if (snaps.has(name)) {
+  return async (driver, name, options) => {
+    const caps = await driver.getCapabilities();
+    if (snaps.has(name) || caps.map_.get("browser") !== "chrome") {
       return;
     } else {
       snaps.add(name);
@@ -66,8 +67,6 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
     if (!BROWSERSTACK_URL) {
       return new webdriver.Builder().forBrowser(localBrowser).build();
     }
-
-
 
     const baseCapabilities = {
       "browserstack.local": "true",
