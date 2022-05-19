@@ -51,7 +51,7 @@ const getPercySnapshotFn = () => {
 
   return async (driver, name, options) => {
     const caps = await driver.getCapabilities();
-    if (snaps.has(name) || caps.map_.get("browser") !== "chrome") {
+    if (snaps.has(name) || caps.map_.get("browser") !== "Chrome") {
       return;
     } else {
       snaps.add(name);
