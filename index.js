@@ -171,8 +171,6 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
             // Run the passed test
             await action(driver, percySnapshot);
 
-            console.log("test complete");
-
             if (BROWSERSTACK_URL) {
               await driver
                 .executeScript(
@@ -180,11 +178,7 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
                 )
                 .catch((e) => console.warn(`Couldn't send success - ${e}`));
             }
-
-            console.log("no error");
           } catch (error) {
-            console.log("Caught error");
-
             try {
               // We need to try to tell Browserstack we have failed!
               if (BROWSERSTACK_URL) {
