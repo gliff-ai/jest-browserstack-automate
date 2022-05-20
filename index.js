@@ -50,7 +50,6 @@ const getPercySnapshotFn = () => {
   const snaps = new Set();
 
   return async (driver, name, options) => {
-    // const caps = await driver.getCapabilities();
     if (snaps.has(name)) {
       return;
     } else {
@@ -78,8 +77,6 @@ const init = (project, desktopBrowsers = bsDesktopBrowsers) => {
 
       ...capabilities,
     };
-
-    console.log(baseCapabilities);
 
     const driver = new webdriver.Builder()
       .usingServer(BROWSERSTACK_URL)
